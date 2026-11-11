@@ -37,7 +37,10 @@ class Provider:
             raise ValueError('Cần đặt MODEL là model có hỗ trợ tool calling.')
         self.name, self.model = name, model
         key_name, self.url = CONFIG[name]
-        self.key = os.getenv(key_name)
+        custom_base = os.getenv('OPENAI_BASE_URL') or os.getenv('BASE_URL') or os.getenv(f'{name.upper()}_BASE_URL')
+        if custom_base and name in ('openai', 'gemini', 'openrouter'):
+            self.url = custom_base.rstrip('/') + '/chat/completions' if not custom_base.endswith('/chat/completions') else custom_base
+        self.key = os.getenv(key_name) or os.getenv('GEMINI_API_KEY') or os.getenv('OPENAI_API_KEY')
         if not self.key:
             raise ValueError(f'Thiếu {key_name}; xem README.md.')
 
